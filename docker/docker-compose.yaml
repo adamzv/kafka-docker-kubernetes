@@ -68,6 +68,17 @@ services:
       - "GF_USERS_ALLOW_SIGN_UP=false"
     ports:
       - 3000:3000
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    depends_on:
+      - kafka
+    environment:
+      - "KAFKA_CLUSTERS_0_NAME=kafka"
+      - "KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092"
+    ports:
+      - 8082:8080
+    networks:
+      - kafka
 volumes:
   kafka-jmx-volume:
   grafana-volume:
