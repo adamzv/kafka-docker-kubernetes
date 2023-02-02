@@ -1,20 +1,69 @@
 version: '3'
 services:
-  kafka:
+  kafka1:
+    container_name: kafka1
     logging:
       driver: local
     ports:
-      - 29094:29092
-      - 29103:29101
+      - 29092:29092
+      - 29101:29101
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENERS: PLAINTEXT://:9092,PLAINTEXT_HOST://:29092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://127.0.0.1:29094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:9092,PLAINTEXT_HOST://127.0.0.1:29092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1   
       EXTRA_ARGS: -javaagent:/usr/share/jmx_exporter/jmx_prometheus_javaagent-0.17.0.jar=29101:/usr/share/jmx_exporter/kafka-broker.yaml
+    image: confluentinc/cp-kafka:latest
+    networks:
+      - kafka
+    volumes:
+      - ./jmx-exporter:/usr/share/jmx_exporter/
+      - kafka-jmx-volume:/jmx-exporter
+    depends_on:
+      - zookeeper
+  kafka2:
+    container_name: kafka2
+    logging:
+      driver: local
+    ports:
+      - 29093:29093
+      - 29102:29102
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://:9093,PLAINTEXT_HOST://:29093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:9093,PLAINTEXT_HOST://127.0.0.1:29093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1   
+      EXTRA_ARGS: -javaagent:/usr/share/jmx_exporter/jmx_prometheus_javaagent-0.17.0.jar=29103:/usr/share/jmx_exporter/kafka-broker.yaml
+    image: confluentinc/cp-kafka:latest
+    networks:
+      - kafka
+    volumes:
+      - ./jmx-exporter:/usr/share/jmx_exporter/
+      - kafka-jmx-volume:/jmx-exporter
+    depends_on:
+      - zookeeper
+  kafka3:
+    container_name: kafka3
+    logging:
+      driver: local
+    ports:
+      - 29094:29094
+      - 29103:29103
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://:9094,PLAINTEXT_HOST://:29094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka3:9094,PLAINTEXT_HOST://127.0.0.1:29094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1   
+      EXTRA_ARGS: -javaagent:/usr/share/jmx_exporter/jmx_prometheus_javaagent-0.17.0.jar=29104:/usr/share/jmx_exporter/kafka-broker.yaml
     image: confluentinc/cp-kafka:latest
     networks:
       - kafka
@@ -50,7 +99,6 @@ services:
       - 9090:9090
     networks:
       - kafka
-    restart: always
   grafana:
     image: grafana/grafana
     depends_on:
@@ -70,11 +118,9 @@ services:
       - 3000:3000
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
-    depends_on:
-      - kafka
     environment:
       - "KAFKA_CLUSTERS_0_NAME=kafka"
-      - "KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092"
+      - "KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka1:9092,kafka2:9093,kafka3:9094"
     ports:
       - 8082:8080
     networks:
